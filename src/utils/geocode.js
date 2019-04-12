@@ -1,21 +1,30 @@
-const request = require('request')
+const request = require('request');
 
-const geocode = (address, callback) => {
-    const url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + address + '.json?access_token=pk.eyJ1IjoiYW5kcmV3bWVhZDEiLCJhIjoiY2pvOG8ybW90MDFhazNxcnJ4OTYydzJlOSJ9.njY7HvaalLEVhEOIghPTlw&limit=1'
+//var API_KEY = 'AIzaSyBJy3L7d29UrITJ32wSzUO6OTI9f8fevO8';
+var API_KEY = '9T7Ff9UGRUuxPtSncpOur5bMLQbpXVKm';
 
-    request({ url, json: true }, (error, { body }) => {
+var geocode = (address, callback) => {
+    var addressString = encodeURIComponent(address);
+    var url = `https://www.mapquestapi.com/geocoding/v1/address?location=${addressString}&key=${API_KEY}`;
+    request({ url, json: true }, (error, response, body) => {
+
         if (error) {
-            callback('Unable to connect to location services!', undefined)
-        } else if (body.features.length === 0) {
-            callback('Unable to find location. Try another search.', undefined)
-        } else {
+            callback('couldnt connect to mapquest servers');
+        } else if (body.info.statuscode === 400) {
+            callback('couldnt fetch data for address provided');
+        } else if (body.info.statuscode === 0) {
             callback(undefined, {
-                latitude: body.features[0].center[1],
-                longitude: body.features[0].center[0],
-                location: body.features[0].place_name
-            })
+                location: body.results[0].providedLocation.location,
+                latitude: body.results[0].locations[0].latLng.lat,
+                longitude: body.results[0].locations[0].latLng.lng
+            });
+        } else {
+            console.log(error);
+            console.log(response);
+
         }
-    })
+    });
+
 }
 
-module.exports = geocode
+module.exports = geocode;
